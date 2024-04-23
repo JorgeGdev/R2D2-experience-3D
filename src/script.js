@@ -26,15 +26,6 @@ import GUI from 'lil-gui'
 
 
 
-
-
-
-
-
-
-
-
-
 /**
  * Base
  */
@@ -46,8 +37,6 @@ const canvas = document.querySelector('canvas.webgl')
 
 // Scene
 const scene = new THREE.Scene()
-
-
 
 
 /**
@@ -78,11 +67,7 @@ const updateAllMaterials = () =>
 
 //ENVIRONMENT MAP
 
-
-
 const rgbeLoader = new RGBELoader()
-
-
 
 
 //HDR  - RBGE - EQUIRECTANGULAR
@@ -372,10 +357,6 @@ if(renderer.getPixelRatio()=== 1 && !renderer.capabilities.isWebGL2)
     effectComposer.addPass(smaaPass)
 
 }
-
-
-
-
 
 
 
