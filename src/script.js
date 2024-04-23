@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import {RGBELoader} from "three/addons/loaders/RGBELoader.js"
 
 import tintVertexShader from './shaders/tint/vertex.glsl'
 import tintFragmentShader from './shaders/tint/fragment.glsl'
@@ -73,20 +74,31 @@ const updateAllMaterials = () =>
     })
 }
 
-/**
- * Environment map
- */
-const environmentMap = cubeTextureLoader.load([
-    '/textures/environmentMaps/0/px.png',
-    '/textures/environmentMaps/0/nx.png',
-    '/textures/environmentMaps/0/py.png',
-    '/textures/environmentMaps/0/ny.png',
-    '/textures/environmentMaps/0/pz.png',
-    '/textures/environmentMaps/0/nz.png'
-])
 
-scene.background = environmentMap
-scene.environment = environmentMap
+
+//ENVIRONMENT MAP
+
+
+
+const rgbeLoader = new RGBELoader()
+
+
+
+
+//HDR  - RBGE - EQUIRECTANGULAR
+
+rgbeLoader.load('/textures/environmentMaps/0/cobblestone_street_night_1k.hdr',
+(environmentMap)=>
+{
+       environmentMap.mapping = THREE.EquirectangularReflectionMapping
+    
+
+   scene.environment = environmentMap
+    scene.background = environmentMap
+
+ } 
+ )
+
 
 /**
  * Models
@@ -95,7 +107,7 @@ let robot = null
 let mixer = null
 
 gltfLoader.load(
-    '/models/r2-d2.glb',
+    '/models/cyclops.glb',
     (gltf) =>
     {
         robot = gltf.scene
@@ -114,7 +126,7 @@ gltfLoader.load(
             scene.add(robot)
             robot.position.y = -3
             robot.rotation.y = Math.PI * 0.5
-            robot.scale.set(5, 5, 5)
+            robot.scale.set(0.1, 0.1, 0.1)
             
             
         })
@@ -172,7 +184,7 @@ window.addEventListener('resize', () =>
  */
 // Base camera
 const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.set(4, 1, - 4)
+camera.position.set(4, 1, - 1)
 scene.add(camera)
 
 // Controls
@@ -207,7 +219,7 @@ document.body.addEventListener('click', () => {
 
     // Sólo cargar y reproducir el sonido si aún no se ha reproducido
     if (!sound.source) {
-        audioLoader.load('/models/audio.mp3', function(buffer) {
+        audioLoader.load('/models/audio.wav', function(buffer) {
             sound.setBuffer(buffer);
             sound.setLoop(false);
             sound.setVolume(0.5);
@@ -265,10 +277,10 @@ unrealBloomPass.threshold = 0.6
 unrealBloomPass.enabled = false
 effectComposer.addPass(unrealBloomPass)
 
-gui.add(unrealBloomPass, "enabled")
-gui.add(unrealBloomPass, "strength").min(0).max(2).step(0.001).name("strength")
-gui.add(unrealBloomPass, "radius").min(0).max(2).step(0.001).name("radius")
-gui.add(unrealBloomPass, "threshold").min(0).max(1).step(0.001).name("threshold")
+// gui.add(unrealBloomPass, "enabled")
+// gui.add(unrealBloomPass, "strength").min(0).max(2).step(0.001).name("strength")
+// gui.add(unrealBloomPass, "radius").min(0).max(2).step(0.001).name("radius")
+// gui.add(unrealBloomPass, "threshold").min(0).max(1).step(0.001).name("threshold")
 
 
 
@@ -287,7 +299,7 @@ const tintShader = {
 
 
 const tintPass =  new ShaderPass(tintShader)
-tintPass.material. uniforms.uTint.value = new THREE.Vector3(0.0, 0.0, 0.0)
+tintPass.material. uniforms.uTint.value = new THREE.Vector3(0.2, 0.0, 0.0)
 effectComposer.addPass(tintPass)
 
 // gui.add(tintPass.material. uniforms.uTint.value, "x").min(-0.5).max(0.5).step(0.001).name("R")
@@ -300,41 +312,41 @@ effectComposer.addPass(tintPass)
 
 //DISPLACEMENT SHADER
 
-// const displacementShader = {
-//     uniforms:{
-//         tDiffuse: {value: null},
-//         uTime: {value: null}
-  
-//     },
-//     vertexShader: displacementVertexShader,
-//     fragmentShader: displacementFragmentShader,
-
-// }
-
-// const displacementPass =  new ShaderPass(displacementShader)
-// displacementPass.material.uniforms.uTime.value = 0
-// effectComposer.addPass(displacementPass)
-
-
-
-
-//NEW DISPLACEMENT SHADER
-
-const newDisplacementShader = {
+const displacementShader = {
     uniforms:{
         tDiffuse: {value: null},
-        uNormalMap: {value: null}
-        
+        uTime: {value: null}
   
     },
-    vertexShader: newDisplacementVertexShader,
-    fragmentShader: newDisplacementFragmentShader,
+    vertexShader: displacementVertexShader,
+    fragmentShader: displacementFragmentShader,
 
 }
 
-const newDisplacementPass =  new ShaderPass(newDisplacementShader)
-newDisplacementPass.material.uniforms.uNormalMap.value = textureLoader.load("/textures/interfaceNormalMap.png")
-effectComposer.addPass(newDisplacementPass)
+const displacementPass =  new ShaderPass(displacementShader)
+displacementPass.material.uniforms.uTime.value = 0
+effectComposer.addPass(displacementPass)
+
+
+
+
+// //NEW DISPLACEMENT SHADER
+
+// const newDisplacementShader = {
+//     uniforms:{
+//         tDiffuse: {value: null},
+//         uNormalMap: {value: null}
+        
+  
+//     },
+//     vertexShader: newDisplacementVertexShader,
+//     fragmentShader: newDisplacementFragmentShader,
+
+// }
+
+// const newDisplacementPass =  new ShaderPass(newDisplacementShader)
+// newDisplacementPass.material.uniforms.uNormalMap.value = textureLoader.load("/textures/interfaceNormalMap.png")
+// effectComposer.addPass(newDisplacementPass)
 
 
 
@@ -380,7 +392,7 @@ const tick = () =>
     previousTime = elapsedTime
 
     //UPDATE UTIME DISPLACEMENT 
-    //displacementPass.material.uniforms.uTime.value = elapsedTime
+    displacementPass.material.uniforms.uTime.value = elapsedTime
 
     //update animation
 
